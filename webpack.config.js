@@ -1,8 +1,11 @@
+const path = require('path');
+
 module.exports = {
-  entry: './js/board.js',
+  context: path.resolve(__dirname, './js'),
+  entry: './board.js',
   output: {
     filename: '[name].js',
-    path: './'
+    path: path.resolve(__dirname, './public')
   },
 
   module: {
