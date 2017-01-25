@@ -6,7 +6,8 @@
   "license": "MIT",
   "scripts" : {
     "build": "webpack -p",
-    "build:dev": "webpack"
+    "build:dev": "webpack",
+    "watch": "webpack --watch"
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",

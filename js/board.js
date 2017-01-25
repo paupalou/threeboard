@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-//COLORS
+// COLORS
 const Colors = {
     red:0xf25346,
     white:0xd8d0d1,
@@ -11,17 +11,44 @@ const Colors = {
     blue:0x68c3c0,
 };
 
-let scene, camera, renderer;
+let scene, camera, renderer, raycaster, INTERSECTED;
+
+let mouse = new THREE.Vector2();
+let theta = 0;
 
 function render() {
   requestAnimationFrame(render);
+
+  // camera.lookAt( scene.position );
+  // camera.updateMatrixWorld();
+
+  raycaster.setFromCamera( mouse, camera );
+
+  // find intersections
+  const intersects = raycaster.intersectObjects( scene.children );
+
+  if ( intersects.length > 0 ) {
+    if ( INTERSECTED != intersects[ 0 ].object ) {
+      console.log(intersects);
+      if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+      INTERSECTED = intersects[ 0 ].object;
+      INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+      INTERSECTED.material.color.setHex( Colors.blue );
+    }
+  } else {
+    if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+    INTERSECTED = null;
+  }
+
+  // end tt
   renderer.render(scene, camera);
 }
 
 function init() {
   createScene();
+  createLights();
   createBoard();
-  // createLights();
+  window.addEventListener( 'mousemove', onDocumentMouseMove, false );
   render();
 }
 
@@ -32,10 +59,10 @@ function createScene() {
   const HEIGHT = window.innerHeight;
 
   // set camera attributes
-  const VIEW_ANGLE = 45;
+  const VIEW_ANGLE = 90;
   const ASPECT = WIDTH / HEIGHT;
-  const NEAR = 1;
-  const FAR = 10000;
+  const NEAR = 0.1;
+  const FAR = 1000;
 
   // create scene camera and renderer
   scene = new THREE.Scene();
@@ -43,13 +70,14 @@ function createScene() {
   renderer = new THREE.WebGLRenderer( {antialias: true} );
 
   // set camera options
-  camera.position.set(500,800,1300);
+  camera.position.set(0,-10,10);
   camera.lookAt(new THREE.Vector3(0,0,0));
 
   // set renderer options
   renderer.setClearColor(0xfff6e6);
   renderer.shadowMap.enabled = true;
   renderer.setSize(WIDTH, HEIGHT);
+  renderer.sortObjects = false;
 
   // appends renderer into dom
   document.body.appendChild(renderer.domElement);
@@ -65,61 +93,39 @@ function createScene() {
 }
 
 function createBoard() {
-  // const board = new Board();
-  // console.log(board.mesh.name);
-  // board.mesh.position.set(10,0,0);
-  // console.log(board.mesh.position);
-  // scene.add(board.mesh);
+  createRow(1);
+  createRow(2);
+  createRow(3);
+  raycaster = new THREE.Raycaster();
+}
 
-  // const mesh = new THREE.Object3D();
-  // mesh.name = 'board';
+function createRow(rowNumber, size = 10) {
+  for (let i = 0; i < size; i++) {
+    const geometry = new THREE.PlaneBufferGeometry( 2, 2, 32 );
+    const material = new THREE.MeshBasicMaterial(
+      {
+        color: Colors.pink,
+        side: THREE.DoubleSide
+      }
+    );
+    const plane = new THREE.Mesh( geometry, material );
+    plane.position.set(-5 + (2.1*i),(2.1*rowNumber-1),0);
+    scene.add(plane);
+  };
 
-  var size = 500, step = 500/1.5;
-  var geometry = new THREE.Geometry();
+}
 
-  for ( var i = - size; i <= size; i += step ) {
-    geometry.vertices.push( new THREE.Vector3( - size, 0, i ) );
-    geometry.vertices.push( new THREE.Vector3(   size, 0, i ) );
-    geometry.vertices.push( new THREE.Vector3( i, 0, - size ) );
-    geometry.vertices.push( new THREE.Vector3( i, 0,   size ) );
-  }
 
-  var material = new THREE.LineBasicMaterial(
-    {
-      color: Colors.yellow,
-      linewidth: 3,
-      opacity: 0.2,
-      transparent: false
-    }
-  );
-  var line = new THREE.LineSegments(geometry, material);
-  scene.add(line);
+function onDocumentMouseMove( event ) {
+  event.preventDefault();
+  mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+  mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+}
 
-  // var raycaster = new THREE.Raycaster();
-  // var mouse = new THREE.Vector2();
-  // var geometry = new THREE.PlaneBufferGeometry( 1000, 1000 );
-  // geometry.rotateX( - Math.PI / 2 );
-  // var plane = new THREE.Mesh(
-  //   geometry,
-  //   new THREE.MeshBasicMaterial({ visible: false })
-  // );
-  // scene.add(plane);
-
-  // const geomBox = new THREE.BoxGeometry(1, 0, 1);
-  // const matBox = new THREE.MeshBasicMaterial({color: Colors.blue});
-  // const matBox  = new THREE.MeshPhongMaterial(
-  //   {
-  //     color: Colors.blue,
-  //   }
-  // );
-  // const box = new THREE.Mesh(geomBox, matBox);
-
-  // const matLine = new THREE.LineBasicMaterial({color: Colors.brownDark});
-  // box.position.set(10,0,0);
-  // box.castShadow = true;
-  // box.receiveShadow = true;
-  // mesh.add(box);
-  // scene.add(box);
+function createLights() {
+  const light = new THREE.DirectionalLight( 0xffffff, 1 );
+  light.position.set( 1, 1, 1 ).normalize();
+  scene.add( light );
 }
 
 class Board {
