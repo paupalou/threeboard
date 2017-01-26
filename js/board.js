@@ -29,9 +29,12 @@ function render() {
 
   if ( intersects.length > 0 ) {
     if ( INTERSECTED != intersects[ 0 ].object ) {
-      console.log(intersects);
       if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
       INTERSECTED = intersects[ 0 ].object;
+      // INTERSECTED = intersects[ 0 ].object.geometry.attributes.position.array[
+      //   intersects[0].face.a * 3 + 1
+      // ];
+      console.log(INTERSECTED);
       INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
       INTERSECTED.material.color.setHex( Colors.blue );
     }
@@ -59,7 +62,7 @@ function createScene() {
   const HEIGHT = window.innerHeight;
 
   // set camera attributes
-  const VIEW_ANGLE = 90;
+  const VIEW_ANGLE = 80;
   const ASPECT = WIDTH / HEIGHT;
   const NEAR = 0.1;
   const FAR = 1000;
@@ -70,7 +73,7 @@ function createScene() {
   renderer = new THREE.WebGLRenderer( {antialias: true} );
 
   // set camera options
-  camera.position.set(0,-10,10);
+  camera.position.set(0,-5,5);
   camera.lookAt(new THREE.Vector3(0,0,0));
 
   // set renderer options
@@ -99,22 +102,17 @@ function createBoard() {
   raycaster = new THREE.Raycaster();
 }
 
-function createRow(rowNumber, size = 10) {
+function createRow(rowNumber, size = 3) {
   for (let i = 0; i < size; i++) {
-    const geometry = new THREE.PlaneBufferGeometry( 2, 2, 32 );
-    const material = new THREE.MeshBasicMaterial(
-      {
-        color: Colors.pink,
-        side: THREE.DoubleSide
-      }
-    );
+    const geometry = new THREE.BoxBufferGeometry(2, 2, 0.2);
+    const material = new THREE.MeshBasicMaterial({
+      color: Colors.yellow
+    });
     const plane = new THREE.Mesh( geometry, material );
-    plane.position.set(-5 + (2.1*i),(2.1*rowNumber-1),0);
+    plane.position.set(-2 + (2.1*i),(2.4*rowNumber-1),0);
     scene.add(plane);
   };
-
 }
-
 
 function onDocumentMouseMove( event ) {
   event.preventDefault();
@@ -129,10 +127,22 @@ function createLights() {
 }
 
 class Board {
-  constructor() {
+  constructor(rows = 3) {
     this.mesh = new THREE.Object3D();
     this.mesh.name = 'board';
     this.mesh.add(this.initBox());
+  }
+
+  createRow(rowNumber, size = 3) {
+    for (let i = 0; i < size; i++) {
+      const geometry = new THREE.BoxBufferGeometry(2, 2, 0.2);
+      const material = new THREE.MeshBasicMaterial({
+        color: Colors.yellow
+      });
+      const plane = new THREE.Mesh( geometry, material );
+      plane.position.set(-2 + (2.1*i),(2.4*rowNumber-1),0);
+      scene.add(plane);
+    };
   }
 
   initBox() {
