@@ -1,62 +1,72 @@
-import * as THREE from 'three';
+import {
+  Scene,
+  PerspectiveCamera,
+  WebGLRenderer,
+  Vector2,
+  Vector3,
+  Raycaster,
+  BoxBufferGeometry,
+  MeshBasicMaterial,
+  Mesh,
+  DirectionalLight,
+} from 'three';
 
 // COLORS
 const Colors = {
-    red:0xf25346,
-    white:0xd8d0d1,
-    brown:0x59332e,
-    brownDark:0x23190f,
-    pink:0xF5986E,
-    yellow:0xf4ce93,
-    blue:0x68c3c0,
+  red: 0xf25346,
+  white: 0xd8d0d1,
+  brown: 0x59332e,
+  brownDark: 0x23190f,
+  pink: 0xF5986E,
+  yellow: 0xf4ce93,
+  blue: 0x68c3c0,
 };
 
-let scene, camera, renderer, raycaster, INTERSECTED;
+let scene;
+let camera;
+let renderer;
+let raycaster;
+let INTERSECTED;
 
-let mouse = new THREE.Vector2();
-let theta = 0;
+const mouse = new Vector2();
 
-function render() {
-  requestAnimationFrame(render);
-
-  // camera.lookAt( scene.position );
-  // camera.updateMatrixWorld();
-
-  raycaster.setFromCamera( mouse, camera );
-
-  // find intersections
-  const intersects = raycaster.intersectObjects( scene.children );
-
-  if ( intersects.length > 0 ) {
-    if ( INTERSECTED != intersects[ 0 ].object ) {
-      if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
-      INTERSECTED = intersects[ 0 ].object;
-      // INTERSECTED = intersects[ 0 ].object.geometry.attributes.position.array[
-      //   intersects[0].face.a * 3 + 1
-      // ];
-      console.log(INTERSECTED);
+function handleIntersects(intersects) {
+  if ( intersects.length > 0) {
+    if (INTERSECTED !== intersects[0].object) {
+      if (INTERSECTED) {
+        INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
+      }
+      INTERSECTED = intersects[0].object;
       INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
-      INTERSECTED.material.color.setHex( Colors.blue );
+      INTERSECTED.material.color.setHex(Colors.blue);
     }
   } else {
-    if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+    if (INTERSECTED) {
+      INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
+    }
     INTERSECTED = null;
   }
+}
 
-  // end tt
+
+function render() {
+  // build animation frame
+  requestAnimationFrame(render);
+
+  // raycaster init
+  raycaster.setFromCamera(mouse, camera);
+
+  // find intersections
+  const intersects = raycaster.intersectObjects(scene.children);
+
+  // handle intersections
+  handleIntersects(intersects);
+
+  // render
   renderer.render(scene, camera);
 }
 
-function init() {
-  createScene();
-  createLights();
-  createBoard();
-  window.addEventListener( 'mousemove', onDocumentMouseMove, false );
-  render();
-}
-
 function createScene() {
-
   // set the scene size
   const WIDTH = window.innerWidth;
   const HEIGHT = window.innerHeight;
@@ -68,13 +78,13 @@ function createScene() {
   const FAR = 1000;
 
   // create scene camera and renderer
-  scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-  renderer = new THREE.WebGLRenderer( {antialias: true} );
+  scene = new Scene();
+  camera = new PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+  renderer = new WebGLRenderer({ antialias: true });
 
   // set camera options
-  camera.position.set(0,-5,5);
-  camera.lookAt(new THREE.Vector3(0,0,0));
+  camera.position.set(0, -5, 5);
+  camera.lookAt(new Vector3(0, 0, 0));
 
   // set renderer options
   renderer.setClearColor(0xfff6e6);
@@ -86,80 +96,52 @@ function createScene() {
   document.body.appendChild(renderer.domElement);
 
   // update the camera and the renderer size if user resizes screen
-  window.addEventListener('resize',  () => {
+  window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
 
-    renderer.setSize( window.innerWidth, window.innerHeight );
-  }, false );
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }, false);
+}
 
+function createRow(rowNumber, size = 3) {
+  for (let i = 0; i < size; i += 1) {
+    const geometry = new BoxBufferGeometry(2, 2, 0.2);
+    const material = new MeshBasicMaterial({
+      color: Colors.yellow
+    });
+    const plane = new Mesh(geometry, material);
+    plane.position.set(-2 + (2.1 * i), (2.4 * (rowNumber - 1)), 0);
+    scene.add(plane);
+  }
 }
 
 function createBoard() {
   createRow(1);
   createRow(2);
   createRow(3);
-  raycaster = new THREE.Raycaster();
+  raycaster = new Raycaster();
 }
 
-function createRow(rowNumber, size = 3) {
-  for (let i = 0; i < size; i++) {
-    const geometry = new THREE.BoxBufferGeometry(2, 2, 0.2);
-    const material = new THREE.MeshBasicMaterial({
-      color: Colors.yellow
-    });
-    const plane = new THREE.Mesh( geometry, material );
-    plane.position.set(-2 + (2.1*i),(2.4*rowNumber-1),0);
-    scene.add(plane);
-  };
-}
-
-function onDocumentMouseMove( event ) {
+function onDocumentMouseMove(event) {
   event.preventDefault();
-  mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-  mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+  mouse.x = ((event.clientX / window.innerWidth) * 2) - 1;
+  mouse.y = -((event.clientY / window.innerHeight) * 2) + 1;
 }
 
 function createLights() {
-  const light = new THREE.DirectionalLight( 0xffffff, 1 );
-  light.position.set( 1, 1, 1 ).normalize();
-  scene.add( light );
+  const light = new DirectionalLight(0xffffff, 1);
+  light.position.set(1, 1, 1).normalize();
+  scene.add(light);
 }
 
-class Board {
-  constructor(rows = 3) {
-    this.mesh = new THREE.Object3D();
-    this.mesh.name = 'board';
-    this.mesh.add(this.initBox());
-  }
-
-  createRow(rowNumber, size = 3) {
-    for (let i = 0; i < size; i++) {
-      const geometry = new THREE.BoxBufferGeometry(2, 2, 0.2);
-      const material = new THREE.MeshBasicMaterial({
-        color: Colors.yellow
-      });
-      const plane = new THREE.Mesh( geometry, material );
-      plane.position.set(-2 + (2.1*i),(2.4*rowNumber-1),0);
-      scene.add(plane);
-    };
-  }
-
-  initBox() {
-    const geomBox = new THREE.BoxGeometry(20,50,50,1,1,1);
-    const matBox  = new THREE.MeshPhongMaterial(
-      {
-        color: Colors.blue,
-        shading: THREE.FlatShading
-      }
-    );
-    const box = new THREE.Mesh(geomBox, matBox);
-    //box.castShadow = true;
-    //box.receiveShadow = true;
-
-    return box;
-  }
+function init() {
+  console.log('hi');
+  createScene();
+  createLights();
+  createBoard();
+  window.addEventListener('mousemove', onDocumentMouseMove, false);
+  render();
 }
 
 window.addEventListener('load', init, false);
-

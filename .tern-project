@@ -1,8 +1,10 @@
 {
+ "ecmaVersion": 6,
   "libs": ["browser"],
   "plugins": {
     "node": {},
     "complete_strings": {},
-    "es_modules": {}
+    "es_modules": {},
+    "threejs": {}
   }
 }
