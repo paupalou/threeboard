@@ -1,15 +1,4 @@
-import {
-  Scene,
-  PerspectiveCamera,
-  WebGLRenderer,
-  Vector2,
-  Vector3,
-  Raycaster,
-  BoxBufferGeometry,
-  MeshBasicMaterial,
-  Mesh,
-  DirectionalLight,
-} from 'three';
+import * as THREE from 'three';
 
 // COLORS
 const Colors = {
@@ -28,10 +17,10 @@ let renderer;
 let raycaster;
 let INTERSECTED;
 
-const mouse = new Vector2();
+const mouse = new THREE.Vector2();
 
 function handleIntersects(intersects) {
-  if ( intersects.length > 0) {
+  if (intersects.length > 0) {
     if (INTERSECTED !== intersects[0].object) {
       if (INTERSECTED) {
         INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
@@ -78,13 +67,13 @@ function createScene() {
   const FAR = 1000;
 
   // create scene camera and renderer
-  scene = new Scene();
-  camera = new PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-  renderer = new WebGLRenderer({ antialias: true });
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+  renderer = new THREE.WebGLRenderer({ antialias: true });
 
   // set camera options
   camera.position.set(0, -5, 5);
-  camera.lookAt(new Vector3(0, 0, 0));
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
 
   // set renderer options
   renderer.setClearColor(0xfff6e6);
@@ -106,21 +95,33 @@ function createScene() {
 
 function createRow(rowNumber, size = 3) {
   for (let i = 0; i < size; i += 1) {
-    const geometry = new BoxBufferGeometry(2, 2, 0.2);
-    const material = new MeshBasicMaterial({
+    const geometry = new THREE.BoxBufferGeometry(2, 2, 0.2);
+    console.log(geometry.index.array);
+
+    // const faceMaterial = new THREE.MeshBasicMaterial({ color: Colors.red });
+
+    // const faceGeo = new THREE.Geometry();
+    // const face = new THREE.Face3(
+    //   geometry.index.array[0],
+    //   geometry.index.array[1],
+    //   geometry.index.array[2]
+    // );
+    // faceGeo.faces.push(face);
+
+    // scene.add(new THREE.Mesh(faceGeo, faceMaterial));
+
+    const material = new THREE.MeshBasicMaterial({
       color: Colors.yellow
     });
-    const plane = new Mesh(geometry, material);
+    const plane = new THREE.Mesh(geometry, material);
     plane.position.set(-2 + (2.1 * i), (2.4 * (rowNumber - 1)), 0);
     scene.add(plane);
   }
 }
 
-function createBoard() {
-  createRow(1);
-  createRow(2);
-  createRow(3);
-  raycaster = new Raycaster();
+function createBoard(rows = 3) {
+  for (const x of [...new Array(rows).keys()]) { createRow(x + 1); }
+  raycaster = new THREE.Raycaster();
 }
 
 function onDocumentMouseMove(event) {
@@ -130,13 +131,12 @@ function onDocumentMouseMove(event) {
 }
 
 function createLights() {
-  const light = new DirectionalLight(0xffffff, 1);
+  const light = new THREE.DirectionalLight(0xffffff, 1);
   light.position.set(1, 1, 1).normalize();
   scene.add(light);
 }
 
 function init() {
-  console.log('hi');
   createScene();
   createLights();
   createBoard();
