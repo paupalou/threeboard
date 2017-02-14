@@ -1,4 +1,9 @@
-import * as THREE from 'three';
+import {
+  Scene,
+  PerspectiveCamera,
+  WebGLRenderer,
+  Vector3
+} from 'three';
 
 // COLORS
 const Colors = {
@@ -67,13 +72,13 @@ function createScene() {
   const FAR = 1000;
 
   // create scene camera and renderer
-  scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-  renderer = new THREE.WebGLRenderer({ antialias: true });
+  scene = new Scene();
+  camera = new PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+  renderer = new WebGLRenderer({ antialias: true });
 
   // set camera options
   camera.position.set(0, -5, 5);
-  camera.lookAt(new THREE.Vector3(0, 0, 0));
+  camera.lookAt(new Vector3(0, 0, 0));
 
   // set renderer options
   renderer.setClearColor(0xfff6e6);
@@ -138,9 +143,9 @@ function createLights() {
 
 function init() {
   createScene();
-  createLights();
-  createBoard();
-  window.addEventListener('mousemove', onDocumentMouseMove, false);
+  // createLights();
+  // createBoard();
+  // window.addEventListener('mousemove', onDocumentMouseMove, false);
   render();
 }
 
