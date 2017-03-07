@@ -2,8 +2,10 @@ import {
   Scene,
   PerspectiveCamera,
   WebGLRenderer,
-  Vector3
-} from 'three';
+  Vector2,
+  Vector3,
+  requestAnimationFrame
+} from 'three'
 
 // COLORS
 const Colors = {
@@ -13,95 +15,94 @@ const Colors = {
   brownDark: 0x23190f,
   pink: 0xF5986E,
   yellow: 0xf4ce93,
-  blue: 0x68c3c0,
-};
+  blue: 0x68c3c0
+}
 
-let scene;
-let camera;
-let renderer;
-let raycaster;
-let INTERSECTED;
+let scene
+let camera
+let renderer
+let raycaster
+let INTERSECTED
 
-const mouse = new THREE.Vector2();
+const mouse = new Vector2()
 
-function handleIntersects(intersects) {
+function handleIntersects (intersects) {
   if (intersects.length > 0) {
     if (INTERSECTED !== intersects[0].object) {
       if (INTERSECTED) {
-        INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
+        INTERSECTED.material.color.setHex(INTERSECTED.currentHex)
       }
-      INTERSECTED = intersects[0].object;
-      INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
-      INTERSECTED.material.color.setHex(Colors.blue);
+      INTERSECTED = intersects[0].object
+      INTERSECTED.currentHex = INTERSECTED.material.color.getHex()
+      INTERSECTED.material.color.setHex(Colors.blue)
     }
   } else {
     if (INTERSECTED) {
-      INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
+      INTERSECTED.material.color.setHex(INTERSECTED.currentHex)
     }
-    INTERSECTED = null;
+    INTERSECTED = null
   }
 }
 
-
-function render() {
+function render () {
   // build animation frame
-  requestAnimationFrame(render);
+  requestAnimationFrame(render)
 
   // raycaster init
-  raycaster.setFromCamera(mouse, camera);
+  raycaster.setFromCamera(mouse, camera)
 
   // find intersections
-  const intersects = raycaster.intersectObjects(scene.children);
+  const intersects = raycaster.intersectObjects(scene.children)
 
   // handle intersections
-  handleIntersects(intersects);
+  handleIntersects(intersects)
 
   // render
-  renderer.render(scene, camera);
+  renderer.render(scene, camera)
 }
 
-function createScene() {
+function createScene () {
   // set the scene size
-  const WIDTH = window.innerWidth;
-  const HEIGHT = window.innerHeight;
+  const WIDTH = window.innerWidth
+  const HEIGHT = window.innerHeight
 
   // set camera attributes
-  const VIEW_ANGLE = 80;
-  const ASPECT = WIDTH / HEIGHT;
-  const NEAR = 0.1;
-  const FAR = 1000;
+  const VIEW_ANGLE = 80
+  const ASPECT = WIDTH / HEIGHT
+  const NEAR = 0.1
+  const FAR = 1000
 
   // create scene camera and renderer
-  scene = new Scene();
-  camera = new PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-  renderer = new WebGLRenderer({ antialias: true });
+  scene = new Scene()
+  camera = new PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR)
+  renderer = new WebGLRenderer({ antialias: true })
 
   // set camera options
-  camera.position.set(0, -5, 5);
-  camera.lookAt(new Vector3(0, 0, 0));
+  camera.position.set(0, -5, 5)
+  camera.lookAt(new Vector3(0, 0, 0))
 
   // set renderer options
-  renderer.setClearColor(0xfff6e6);
-  renderer.shadowMap.enabled = true;
-  renderer.setSize(WIDTH, HEIGHT);
-  renderer.sortObjects = false;
+  renderer.setClearColor(0xfff6e6)
+  renderer.shadowMap.enabled = true
+  renderer.setSize(WIDTH, HEIGHT)
+  renderer.sortObjects = false
 
   // appends renderer into dom
-  document.body.appendChild(renderer.domElement);
+  document.body.appendChild(renderer.domElement)
 
   // update the camera and the renderer size if user resizes screen
   window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
 
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  }, false);
+    renderer.setSize(window.innerWidth, window.innerHeight)
+  }, false)
 }
 
-function createRow(rowNumber, size = 3) {
+function createRow (rowNumber, size = 3) {
   for (let i = 0; i < size; i += 1) {
-    const geometry = new THREE.BoxBufferGeometry(2, 2, 0.2);
-    console.log(geometry.index.array);
+    const geometry = new BoxBufferGeometry(2, 2, 0.2)
+    console.log(geometry.index.array)
 
     // const faceMaterial = new THREE.MeshBasicMaterial({ color: Colors.red });
 
@@ -115,38 +116,38 @@ function createRow(rowNumber, size = 3) {
 
     // scene.add(new THREE.Mesh(faceGeo, faceMaterial));
 
-    const material = new THREE.MeshBasicMaterial({
+    const material = new MeshBasicMaterial({
       color: Colors.yellow
-    });
-    const plane = new THREE.Mesh(geometry, material);
-    plane.position.set(-2 + (2.1 * i), (2.4 * (rowNumber - 1)), 0);
-    scene.add(plane);
+    })
+    const plane = new Mesh(geometry, material)
+    plane.position.set(-2 + (2.1 * i), (2.4 * (rowNumber - 1)), 0)
+    scene.add(plane)
   }
 }
 
-function createBoard(rows = 3) {
-  for (const x of [...new Array(rows).keys()]) { createRow(x + 1); }
-  raycaster = new THREE.Raycaster();
+function createBoard (rows = 3) {
+  for (const x of [...new Array(rows).keys()]) { createRow(x + 1) }
+  raycaster = new Raycaster()
 }
 
-function onDocumentMouseMove(event) {
-  event.preventDefault();
-  mouse.x = ((event.clientX / window.innerWidth) * 2) - 1;
-  mouse.y = -((event.clientY / window.innerHeight) * 2) + 1;
+function onDocumentMouseMove (event) {
+  event.preventDefault()
+  mouse.x = ((event.clientX / window.innerWidth) * 2) - 1
+  mouse.y = -((event.clientY / window.innerHeight) * 2) + 1
 }
 
-function createLights() {
-  const light = new THREE.DirectionalLight(0xffffff, 1);
-  light.position.set(1, 1, 1).normalize();
-  scene.add(light);
+function createLights () {
+  const light = new DirectionalLight(0xffffff, 1)
+  light.position.set(1, 1, 1).normalize()
+  scene.add(light)
 }
 
-function init() {
-  createScene();
+function init () {
+  createScene()
   // createLights();
   // createBoard();
   // window.addEventListener('mousemove', onDocumentMouseMove, false);
-  render();
+  render()
 }
 
-window.addEventListener('load', init, false);
+window.addEventListener('load', init, false)

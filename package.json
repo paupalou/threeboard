@@ -7,7 +7,9 @@
   "scripts": {
     "build": "webpack -p",
     "build:dev": "webpack",
-    "watch": "webpack --watch"
+    "watch": "webpack --watch",
+    "lint": "./node_modules/standard/bin/cmd.js js/**/*.js",
+    "fix": "./node_modules/standard/bin/cmd.js --fix js/**/*.js"
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",
@@ -23,6 +25,7 @@
     "rollup-plugin-json": "^2.1.0",
     "rollup-plugin-node-resolve": "^2.0.0",
     "rollup-plugin-uglify": "^1.0.1",
+    "standard": "^8.6.0",
     "webpack": "beta"
   },
   "dependencies": {
