@@ -4,7 +4,12 @@ import {
   WebGLRenderer,
   Vector2,
   Vector3,
-  requestAnimationFrame
+  requestAnimationFrame,
+  BoxBufferGeometry,
+  Mesh,
+  MeshBasicMaterial,
+  Raycaster,
+  DirectionalLight
 } from 'three'
 
 // COLORS
@@ -144,9 +149,9 @@ function createLights () {
 
 function init () {
   createScene()
-  // createLights();
-  // createBoard();
-  // window.addEventListener('mousemove', onDocumentMouseMove, false);
+  createLights()
+  createBoard()
+  window.addEventListener('mousemove', onDocumentMouseMove, false)
   render()
 }
 
